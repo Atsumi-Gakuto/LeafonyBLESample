@@ -9,8 +9,44 @@
     <body>
         <h1>BLEサンプル</h1>
         <p>BLEと親睦を深めるために色々やります。</p>
-        <button id="bluetooth_connect_button" onclick="onBluetoothConnectButtonClick();">Bluetooth接続</button>
-        <button id="bluetooth_disconnect_button" onclick="onBluetoothDisconnectButtonClick();" disabled>Bluetooth切断</button>
+        <div id="bluetooth_area">
+            <button id="bluetooth_connect_button" onclick="onBluetoothConnectButtonClick();">Bluetooth接続</button>
+            <button id="bluetooth_disconnect_button" onclick="onBluetoothDisconnectButtonClick();" disabled>Bluetooth切断</button>
+            <div id="leafony_area" class="hidden">
+                <table>
+                    <tr>
+                        <td>デバイス名</td>
+                        <td id="device_name"></td>
+                    </tr>
+                    <tr>
+                        <td>温度（℃）</td>
+                        <td id="temperature"></td>
+                    </tr>
+                    <tr>
+                        <td>湿度（%RH）</td>
+                        <td id="humidity"></td>
+                    </tr>
+                    <tr>
+                        <td>照度（lux）</td>
+                        <td id="brightness"></td>
+                    </tr>
+                    <tr>
+                        <td>傾き（deg）</td>
+                        <td id="tilt"></td>
+                    </tr>
+                    <tr>
+                        <td>バッテリー電圧（V）</td>
+                        <td id="battery_voltage"></td>
+                    </tr>
+                    <tr>
+                        <td>サイコロの目</td>
+                        <td id="dice_face"></td>
+                    </tr>
+                </table>
+                <button class="led_control_buttons" onclick="sendCommand('PLS');" disabled>LED点滅減速</button>
+                <button class="led_control_buttons" onclick="sendCommand('MNS');" disabled>LED点滅加速</button>
+            </div>
+        </div>
         <p id="bluetooth_api_not_supported" class="error_message hidden">お使いのブラウザはBluetooth APIに対応していません。Google Chromeの場合は "<span class="copyable_text">chrome://flags/#enable-experimental-web-platform-features</span>" を検索バーに入力するとBluetooth APIを有効化出来る場合があります。</p>
         <p id="balloon_text" class="hidden"></p>
     </body>

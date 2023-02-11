@@ -29,7 +29,7 @@ let WriteCharacteristic;
 let Device;
 
 /**
- * 「Bluetooth接続」ボタンをクリックした時の処理
+ * 「Bluetooth接続」ボタンをクリックした時の関数
  */
 function onBluetoothConnectButtonClick() {
     navigator.bluetooth.requestDevice({
@@ -40,10 +40,17 @@ function onBluetoothConnectButtonClick() {
         document.getElementById("bluetooth_connect_button").disabled = true;
         document.getElementById("bluetooth_disconnect_button").disabled = false;
         Device = device;
+        document.getElementById("leafony_area").classList.remove("hidden");
+        document.getElementById("device_name").innerText = device.name;
         console.group("Bluetoothデバイスに接続しました。");
         console.debug(`ユニーク名: ${device.name}`);
         console.debug(`ID: ${device.id}`);
         console.groupEnd();
+        device.addEventListener("gattserverdisconnected", () => {
+            document.getElementById("leafony_area").classList.add("hidden");
+            ["device_name", "temperature", "humidity", "brightness", "tilt", "battery_voltage", "dice_face"].forEach((elementId) => document.getElementById(elementId).innerText = "");
+            Array.prototype.forEach.call(document.getElementsByClassName("led_control_buttons"), (element) => element.disabled = true);
+        }, {once: true});
         //GATTサーバに接続する。
         device.gatt.connect().then((server) => {
             console.info("GATTサーバに接続しました。");
@@ -54,6 +61,7 @@ function onBluetoothConnectButtonClick() {
                 service.getCharacteristic(READ_CHARACTERISTIC_UUID).then((characteristic) => {
                     characteristic.addEventListener("characteristicvaluechanged", (event) => {
                         const data = new TextDecoder("utf-8").decode(event.target.value).replace(/\r?\n|\s/g, "").split(",");
+                        ["temperature", "humidity", "brightness", "tilt", "battery_voltage", "dice_face"].forEach((elementId, index) => document.getElementById(elementId).innerText = data[index]);
                         console.group("キャラクタリスティックが変化しました。");
                         console.debug(data);
                         console.groupEnd();
@@ -64,6 +72,7 @@ function onBluetoothConnectButtonClick() {
                 service.getCharacteristic(WRITE_CHARACTERISTIC_UUID).then((characteristic) => {
                     WriteCharacteristic = characteristic;
                     sendCommand("SND");
+                    Array.prototype.forEach.call(document.getElementsByClassName("led_control_buttons"), (element) => element.disabled = false);
                 });
             });
         });
@@ -105,6 +114,7 @@ function sendCommand(command) {
 if(navigator.bluetooth) console.info("お使いのブラウザはBluetooth APIに対応しています。");
 else {
     console.warn("お使いのブラウザはBluetooth APIに対応していません。Google Chromeの場合は \"chrome://flags/#enable-experimental-web-platform-features\" を検索バーに入力するとBluetooth APIを有効化出来る場合があります。");
+    document.getElementById("bluetooth_area").classList.add("hidden");
     document.getElementById("bluetooth_api_not_supported").classList.remove("hidden");
 }
 
