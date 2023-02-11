@@ -1,6 +1,15 @@
 .hidden {
     display: none;
 }
+table {
+    margin-top: 20px;
+}
+.table_label {
+    font-weight: bold;
+}
+.table_value {
+    text-align: right;
+}
 .error_message {
     color: red;
 }
