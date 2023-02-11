@@ -3,9 +3,13 @@
     <head>
         <meta charset="utf-8">
         <title>BLEサンプル</title>
+        <script defer src="BLESample.js"></script>
+        <link rel="stylesheet" href="BLESample.css">
     </head>
     <body>
         <h1>BLEサンプル</h1>
         <p>BLEと親睦を深めるために色々やります。</p>
+        <p id="bluetooth_api_not_supported" class="error_message hidden">お使いのブラウザはBluetooth APIに対応していません。Google Chromeの場合は "<span class="copyable_text">chrome://flags/#enable-experimental-web-platform-features</span>" を検索バーに入力するとBluetooth APIを有効化出来る場合があります。</p>
+        <p id="balloon_text" class="hidden"></p>
     </body>
 </html>
