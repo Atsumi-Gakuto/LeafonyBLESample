@@ -1,3 +1,52 @@
+/**
+ * 接続しているBluetoothデバイスのオブジェクト
+ * @type {BluetoothDevice|null}
+ */
+let Device;
+
+/**
+ * 「Bluetooth接続」ボタンをクリックした時の処理
+ */
+function onBluetoothConnectButtonClick() {
+    navigator.bluetooth.requestDevice({
+        filters: [{
+            name: ["Leafony_AC02"]
+        }]
+    }).then((device) => {
+        document.getElementById("bluetooth_connect_button").disabled = true;
+        document.getElementById("bluetooth_disconnect_button").disabled = false;
+        Device = device;
+        console.group("Bluetoothデバイスに接続しました。");
+        console.debug(`ユニーク名: ${device.name}`);
+        console.debug(`ID: ${device.id}`);
+        console.groupEnd();
+        device.gatt.connect().then((server) => {
+            console.info("GATTサーバに接続しました。");
+        });
+    }).catch((error) => {
+        switch(error.name) {
+            case "NotFoundError":
+                console.info("ユーザがBluetoothデバイスの選択をキャンセルしました。");
+                break;
+            default:
+                console.error(`Bluetoothデバイスの選択準備時にエラーが発生しました。${error.message}`);
+        }
+    });
+}
+
+/**
+ * 「Bluetooth切断」ボタンをクリックした時の処理
+ */
+function onBluetoothDisconnectButtonClick() {
+    if(Device) {
+        Device.gatt.disconnect();
+        console.info("Bluetoothデバイスとの通信を切断しました。");
+        Device = undefined;
+    }
+    document.getElementById("bluetooth_connect_button").disabled = false;
+    document.getElementById("bluetooth_disconnect_button").disabled = true;
+}
+
 //WebがBluetooth APIに対応しているかどうか確認する。
 if(navigator.bluetooth) console.info("お使いのブラウザはBluetooth APIに対応しています。");
 else {
@@ -7,7 +56,7 @@ else {
 
 //"copyable_text"クラスのテキストをコピー出来るようにする処理
 /**
- * マウスカーソルが"copyable_text"クラス内にある時に動いた時の処理
+ * マウスカーソルが"copyable_text"クラス内にある時に動いた時の関数
  * @param {MouseEvent} event イベント
  */
 function onMouseMoveInCopyableTextClass(event) {
