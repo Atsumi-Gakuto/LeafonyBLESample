@@ -1,6 +1,30 @@
 /**
+ * サービスのUUID
+ * @type {string}
+ */
+const SERVICE_UUID = "442f1570-8a00-9a28-cbe1-e1d4212d53eb";
+
+/**
+ * 読み取りのキャラクタリスティックのUUID
+ * @type {string}
+ */
+const READ_CHARACTERISTIC_UUID = "442f1571-8a00-9a28-cbe1-e1d4212d53eb";
+
+/**
+ * 書き込みのキャラクタリスティックのUUID
+ * @type {string}
+ */
+const WRITE_CHARACTERISTIC_UUID = "442f1572-8a00-9a28-cbe1-e1d4212d53eb";
+
+/**
+ * 書き込みのキャラクタリスティック
+ * @type {BluetoothRemoteGATTCharacteristic|undefined}
+ */
+let WriteCharacteristic;
+
+/**
  * 接続しているBluetoothデバイスのオブジェクト
- * @type {BluetoothDevice|null}
+ * @type {BluetoothDevice|undefined}
  */
 let Device;
 
@@ -20,8 +44,28 @@ function onBluetoothConnectButtonClick() {
         console.debug(`ユニーク名: ${device.name}`);
         console.debug(`ID: ${device.id}`);
         console.groupEnd();
+        //GATTサーバに接続する。
         device.gatt.connect().then((server) => {
             console.info("GATTサーバに接続しました。");
+            //サービスに接続する。
+            server.getPrimaryService(SERVICE_UUID).then((service) => {
+                console.info("プライマリサービスに接続しました。");
+                //読み取りのキャラクタリスティック
+                service.getCharacteristic(READ_CHARACTERISTIC_UUID).then((characteristic) => {
+                    characteristic.addEventListener("characteristicvaluechanged", (event) => {
+                        const data = new TextDecoder("utf-8").decode(event.target.value).replace(/\r?\n|\s/g, "").split(",");
+                        console.group("キャラクタリスティックが変化しました。");
+                        console.debug(data);
+                        console.groupEnd();
+                    });
+                    characteristic.startNotifications();
+                });
+                //書き込みのキャラクタリスティック
+                service.getCharacteristic(WRITE_CHARACTERISTIC_UUID).then((characteristic) => {
+                    WriteCharacteristic = characteristic;
+                    sendCommand("SND");
+                });
+            });
         });
     }).catch((error) => {
         switch(error.name) {
@@ -42,9 +86,19 @@ function onBluetoothDisconnectButtonClick() {
         Device.gatt.disconnect();
         console.info("Bluetoothデバイスとの通信を切断しました。");
         Device = undefined;
+        WriteCharacteristic = undefined;
     }
     document.getElementById("bluetooth_connect_button").disabled = false;
     document.getElementById("bluetooth_disconnect_button").disabled = true;
+}
+
+/**
+ * Leafonyにコマンドを送信する。
+ * @param {string} command 送信する文字列
+ */
+function sendCommand(command) {
+    if(WriteCharacteristic) WriteCharacteristic.writeValue(new TextEncoder().encode(command)).then(() => console.info("Bluetoothデバイスにメッセージを送信しました。"));
+    else console.warn("Bluetoothデバイスに接続されていないため、メッセージを送信できませんでした。");
 }
 
 //WebがBluetooth APIに対応しているかどうか確認する。
